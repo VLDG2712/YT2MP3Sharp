@@ -1,7 +1,7 @@
 ![build](https://github.com/VLDG2712/YT2MP3Sharp/actions/workflows/dotnet.yml/badge.svg)
 
-Wanted to learn CSharp and made this
-Pretty basic YouTube MP3 Downloader written in CSharp (C#) with WinForms on Dotnet 8.0 using following depedencies:
+    Wanted to learn CSharp and made this
+    Pretty basic YouTube MP3 Downloader written in CSharp (C#) with WinForms on Dotnet 8.0 using following depedencies:
        
         - MaterialSkin 2 (2.3.1)
         

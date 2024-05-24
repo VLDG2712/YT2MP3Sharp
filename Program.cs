@@ -1,6 +1,3 @@
-using System;
-using System.Windows.Forms;
-
 namespace YouTubeMp3Downloader
 {
     static class Program

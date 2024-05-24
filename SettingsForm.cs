@@ -7,12 +7,6 @@
  * LICENSE file in the root directory of this source tree. 
  * 
  */
-
-using System;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
 
@@ -25,6 +19,7 @@ namespace YouTubeMp3Downloader
         private MaterialTextBox txtDefaultPath;
         private MaterialTextBox txtApiKey;
         private MaterialButton btnSave;
+        private MaterialButton btnBrowse;
         private Button btnClose;
         private Button btnMinimize;
         private string configFilePath = "config.txt";
@@ -52,17 +47,20 @@ namespace YouTubeMp3Downloader
         {
             this.rbLightTheme = new MaterialRadioButton() { Text = "Light Theme", Width = 280, Top = 60, Left = 20 };
             this.rbDarkTheme = new MaterialRadioButton() { Text = "Dark Theme", Width = 280, Top = 100, Left = 20, Checked = true };
-            this.txtDefaultPath = new MaterialTextBox() { Hint = "Default Save Path", Width = 280, Top = 140, Left = 20 };
+            this.txtDefaultPath = new MaterialTextBox() { Hint = "Default Save Path", Width = 200, Top = 140, Left = 20 };
+            this.btnBrowse = new MaterialButton() { Text = "Browse", Width = 60, Top = 140, Left = 230 };
             this.txtApiKey = new MaterialTextBox() { Hint = "API Key", Width = 280, Top = 200, Left = 20 };
             this.btnSave = new MaterialButton() { Text = "Save Settings", Width = 280, Top = 260, Left = 20 };
 
             this.rbLightTheme.CheckedChanged += new EventHandler(this.ThemeChanged);
             this.rbDarkTheme.CheckedChanged += new EventHandler(this.ThemeChanged);
             this.btnSave.Click += new EventHandler(this.btnSave_Click);
+            this.btnBrowse.Click += new EventHandler(this.btnBrowse_Click);
 
             this.Controls.Add(this.rbLightTheme);
             this.Controls.Add(this.rbDarkTheme);
             this.Controls.Add(this.txtDefaultPath);
+            this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.txtApiKey);
             this.Controls.Add(this.btnSave);
 
@@ -138,6 +136,17 @@ namespace YouTubeMp3Downloader
             File.WriteAllLines(configFilePath, new[] { selectedTheme, defaultPath, apiKey });
             MessageBox.Show("Settings saved.");
             UpdateMainFormTheme();
+        }
+
+        private void btnBrowse_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowserDialog = new FolderBrowserDialog())
+            {
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtDefaultPath.Text = folderBrowserDialog.SelectedPath;
+                }
+            }
         }
 
         private void LoadSettings()

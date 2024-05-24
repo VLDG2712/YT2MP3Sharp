@@ -8,27 +8,17 @@
  * 
  */
 
-
-using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
+using System.Diagnostics;
 using YoutubeExplode;
-using YoutubeExplode.Exceptions;
 using YoutubeExplode.Videos.Streams;
-using YoutubeExplode.Playlists;
 
 namespace YouTubeMp3Downloader
 {
     public class MainForm : MaterialForm
     {
         private MaterialTextBox txtUrl;
-        private MaterialTextBox txtOutputPath;
         private MaterialButton btnDownload;
         private MaterialButton btnSettings;
         private TextBox txtStatus;
@@ -61,17 +51,15 @@ namespace YouTubeMp3Downloader
         private void InitializeComponent()
         {
             this.txtUrl = new MaterialTextBox() { Hint = "YouTube URL or Playlist URL", Width = 280, Top = 80, Left = 20, MaxLength = 500 };
-            this.txtOutputPath = new MaterialTextBox() { Hint = "Output Path", Width = 280, Top = 140, Left = 20, ReadOnly = true };
-            this.btnDownload = new MaterialButton() { Text = "Download", Width = 140, Top = 200, Left = 20 };
-            this.btnSettings = new MaterialButton() { Text = "Settings", Width = 140, Top = 200, Left = 160 };
-            this.txtStatus = new TextBox() { Width = 280, Height = 150, Top = 260, Left = 20, Multiline = true, ScrollBars = ScrollBars.Vertical, ReadOnly = true };
-            this.progressBar = new MaterialProgressBar() { Width = 280, Top = 420, Left = 20 };
+            this.btnDownload = new MaterialButton() { Text = "Download", Width = 140, Top = 140, Left = 20 };
+            this.btnSettings = new MaterialButton() { Text = "Settings", Width = 140, Top = 140, Left = 160 };
+            this.txtStatus = new TextBox() { Width = 280, Height = 150, Top = 200, Left = 20, Multiline = true, ScrollBars = ScrollBars.Vertical, ReadOnly = true };
+            this.progressBar = new MaterialProgressBar() { Width = 280, Top = 370, Left = 20 };
 
             this.btnDownload.Click += new EventHandler(this.btnDownload_Click);
             this.btnSettings.Click += new EventHandler(this.btnSettings_Click);
 
             this.Controls.Add(this.txtUrl);
-            this.Controls.Add(this.txtOutputPath);
             this.Controls.Add(this.btnDownload);
             this.Controls.Add(this.btnSettings);
             this.Controls.Add(this.txtStatus);
@@ -148,8 +136,6 @@ namespace YouTubeMp3Downloader
                     {
                         materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
                     }
-
-                    txtOutputPath.Text = defaultSavePath;
                 }
             }
         }
@@ -157,9 +143,8 @@ namespace YouTubeMp3Downloader
         private async void btnDownload_Click(object sender, EventArgs e)
         {
             string url = txtUrl.Text;
-            string outputPath = string.IsNullOrEmpty(txtOutputPath.Text) ? defaultSavePath : txtOutputPath.Text;
 
-            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(outputPath))
+            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(defaultSavePath))
             {
                 MessageBox.Show("Please fill in all fields.");
                 return;
@@ -178,11 +163,11 @@ namespace YouTubeMp3Downloader
             {
                 if (url.Contains("playlist"))
                 {
-                    await Task.Run(() => DownloadPlaylistAsync(url, outputPath));
+                    await Task.Run(() => DownloadPlaylistAsync(url, defaultSavePath));
                 }
                 else
                 {
-                    await Task.Run(() => DownloadVideoAsync(url, outputPath));
+                    await Task.Run(() => DownloadVideoAsync(url, defaultSavePath));
                 }
             }
             catch (Exception ex)

@@ -1,6 +1,6 @@
 ![build](https://github.com/VLDG2712/YT2MP3Sharp/actions/workflows/dotnet.yml/badge.svg)
 
-![Screenshot](https://imgur.com/NUUBYOb)
+[Imgur](https://imgur.com/NUUBYOb)
 
 
 

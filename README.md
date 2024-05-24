@@ -2,9 +2,12 @@
 
 Wanted to learn CSharp and made this
 Pretty basic YouTube MP3 Downloader written in CSharp (C#) with WinForms on Dotnet 8.0 using following depedencies:
-    - MaterialSkin 2 (2.3.1)
-    - YoutubeExplode (6.3.16)
-    - .NET Core 8.0.5
+       
+        - MaterialSkin 2 (2.3.1)
+        
+        - YoutubeExplode (6.3.16)
+        
+        - .NET Core 8.0.5
 
 
 Disclaimer:

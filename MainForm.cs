@@ -44,6 +44,7 @@ namespace YouTubeMp3Downloader
             InitializeComponent();
             InitializeMaterialSkin();
             LoadSettings();
+            this.Icon = new Icon("Resources/icon.ico"); // Set the form icon
         }
 
         private void InitializeMaterialSkin()

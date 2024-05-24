@@ -56,8 +56,8 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: YT2MP3Sharp
-      Test_Project_Path: YT2MP3Sharp-tests/ YT2MP3Sharp-tests.csproj
+      Solution_Name: YouTubeMp3Downloader
+      Test_Project_Path:  YouTubeMp3Downloader-tests/ YouTubeMp3Downloader-tests.csproj
 
     steps:
     - name: Checkout

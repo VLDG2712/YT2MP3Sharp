@@ -8,7 +8,6 @@
  * 
  */
 
-
 using System;
 using System.Drawing;
 using System.IO;
@@ -51,11 +50,11 @@ namespace YouTubeMp3Downloader
 
         private void InitializeComponent()
         {
-            this.rbLightTheme = new MaterialRadioButton() { Text = "Light Theme", Width = 280, Top = 80, Left = 20 };
-            this.rbDarkTheme = new MaterialRadioButton() { Text = "Dark Theme", Width = 280, Top = 110, Left = 20, Checked = true };
+            this.rbLightTheme = new MaterialRadioButton() { Text = "Light Theme", Width = 280, Top = 60, Left = 20 };
+            this.rbDarkTheme = new MaterialRadioButton() { Text = "Dark Theme", Width = 280, Top = 100, Left = 20, Checked = true };
             this.txtDefaultPath = new MaterialTextBox() { Hint = "Default Save Path", Width = 280, Top = 140, Left = 20 };
-            this.txtApiKey = new MaterialTextBox() { Hint = "API Key", Width = 280, Top = 170, Left = 20 };
-            this.btnSave = new MaterialButton() { Text = "Save Settings", Width = 280, Top = 210, Left = 20 };
+            this.txtApiKey = new MaterialTextBox() { Hint = "API Key", Width = 280, Top = 200, Left = 20 };
+            this.btnSave = new MaterialButton() { Text = "Save Settings", Width = 280, Top = 260, Left = 20 };
 
             this.rbLightTheme.CheckedChanged += new EventHandler(this.ThemeChanged);
             this.rbDarkTheme.CheckedChanged += new EventHandler(this.ThemeChanged);
@@ -100,9 +99,12 @@ namespace YouTubeMp3Downloader
             this.Controls.Add(this.btnMinimize);
 
             this.Text = "Settings";
-            this.ClientSize = new System.Drawing.Size(320, 300);
+            this.ClientSize = new System.Drawing.Size(320, 320);
             this.FormBorderStyle = FormBorderStyle.None; // Remove the default title bar
             this.MaximizeBox = false; // Disable the maximize box
+            this.MinimizeBox = false; // Disable the minimize box
+            this.ControlBox = false; // Hide the default control box
+            this.FormBorderStyle = FormBorderStyle.FixedSingle; // Make the form non-resizable
 
             // Enable dragging of the form
             this.MouseDown += (sender, e) =>
@@ -113,9 +115,6 @@ namespace YouTubeMp3Downloader
                     SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
                 }
             };
-
-            // Hide default control box
-            this.ControlBox = false;
         }
 
         private void ThemeChanged(object sender, EventArgs e)

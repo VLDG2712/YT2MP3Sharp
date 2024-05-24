@@ -10,11 +10,13 @@ Pretty basic YouTube MP3 Downloader written in CSharp (C#) with WinForms on Dotn
         - .NET Core 8.0.5
 
 
-Disclaimer:
+    Disclaimer:
 
-! I don't recommend downloading copyrighted material with it, USE AT YOUR OWN RISK!
-! For Entertainment and Educational purposes only
+        -  ! I don't recommend downloading copyrighted material with it, USE AT YOUR OWN RISK !
 
+        -  ! For Entertainment and Educational purposes only !
+
+        -  ! Feel Free to Edit the code and Publish !
 
 
 Copyright (c) 2024, Constantinesei Vlad (VLDG2712)

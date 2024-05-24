@@ -1,3 +1,19 @@
+![build](https://github.com/VLDG2712/YT2MP3Sharp/actions/workflows/dotnet.yml/badge.svg)
+
+Wanted to learn CSharp and made this
+Pretty basic YouTube MP3 Downloader written in CSharp (C#) with WinForms on Dotnet 8.0 using following depedencies:
+    - MaterialSkin 2 (2.3.1)
+    - YoutubeExplode (6.3.16)
+    - .NET Core 8.0.5
+
+
+Disclaimer:
+
+! I don't recommend downloading copyrighted material with it, USE AT YOUR OWN RISK!
+! For Entertainment and Educational purposes only
+
+
+
 Copyright (c) 2024, Constantinesei Vlad (VLDG2712)
 
 All rights reserved.

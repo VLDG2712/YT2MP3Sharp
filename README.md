@@ -1,4 +1,4 @@
-Copyright (c) 2024, VLDG2712
+Copyright (c) 2024, Constantinesei Vlad (VLDG2712)
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the

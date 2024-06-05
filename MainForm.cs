@@ -1,6 +1,6 @@
 /*
  * 
- * Copyright (c) 2024, VLDG2712
+Copyright (c) 2024, VLDG2712
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -13,7 +13,9 @@ using MaterialSkin.Controls;
 using System.Diagnostics;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
-
+using System.Threading.Tasks;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace YouTubeMp3Downloader
 {
@@ -30,6 +32,7 @@ namespace YouTubeMp3Downloader
         private string configFilePath = "config.txt";
         private string defaultSavePath = "";
         private string apiKey = "";
+        private int concurrentDownloads = 5;
 
         public MainForm()
         {
@@ -53,7 +56,7 @@ namespace YouTubeMp3Downloader
         private void InitializeComponent()
         {
             this.txtUrl = new MaterialTextBox() { Hint = "YouTube URL or Playlist URL", Width = 280, Top = 58, Left = 20, MaxLength = 500 };
-            this.formatComboBox = new ComboBox() { Width = 280, Top = 110, Left = 20 };
+            this.formatComboBox = new ComboBox() { Width = 280, Top = 110, Left = 20, DropDownStyle = ComboBoxStyle.DropDownList };
             this.formatComboBox.Items.AddRange(new string[] { "MP4", "MP3" });
             this.formatComboBox.SelectedIndex = 0; // Default to MP4
             this.btnDownload = new MaterialButton() { Text = "Download", Width = 140, Top = 150, Left = 20 };
@@ -127,11 +130,12 @@ namespace YouTubeMp3Downloader
             if (File.Exists(configFilePath))
             {
                 var settings = File.ReadAllLines(configFilePath);
-                if (settings.Length >= 3)
+                if (settings.Length >= 4)
                 {
                     var selectedTheme = settings[0];
                     defaultSavePath = settings[1];
                     apiKey = settings[2];
+                    concurrentDownloads = int.Parse(settings[3]);
 
                     var materialSkinManager = MaterialSkinManager.Instance;
                     if (selectedTheme == "Light")
@@ -169,6 +173,8 @@ namespace YouTubeMp3Downloader
 
             try
             {
+                txtStatus.AppendText("Starting download process...\n");
+
                 if (url.Contains("playlist"))
                 {
                     await Task.Run(() => DownloadPlaylistAsync(url, defaultSavePath, format));
@@ -180,7 +186,7 @@ namespace YouTubeMp3Downloader
             }
             catch (Exception ex)
             {
-                txtStatus.AppendText("Error: " + ex.Message + Environment.NewLine);
+                txtStatus.Invoke((Action)(() => txtStatus.AppendText("Error: " + ex.Message + Environment.NewLine)));
             }
         }
 
@@ -188,6 +194,7 @@ namespace YouTubeMp3Downloader
         {
             try
             {
+                txtStatus.Invoke((Action)(() => txtStatus.AppendText("Fetching video information...\n")));
                 var youtube = new YoutubeClient();
 
                 // Get video information
@@ -196,7 +203,6 @@ namespace YouTubeMp3Downloader
 
                 if (format == "MP4")
                 {
-                    // Select the best video stream with audio
                     var streamInfo = streamManifest.GetMuxedStreams().GetWithHighestVideoQuality();
 
                     if (streamInfo != null)
@@ -204,21 +210,19 @@ namespace YouTubeMp3Downloader
                         var sanitizedTitle = SanitizeFileName(video.Title);
                         var finalFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp4");
 
-                        txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine)));
 
-                        // Download the video as MP4
                         await youtube.Videos.Streams.DownloadAsync(streamInfo, finalFilePath);
 
-                        txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine)));
                     }
                     else
                     {
-                        txtStatus.AppendText("No suitable stream found." + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText("No suitable stream found." + Environment.NewLine)));
                     }
                 }
                 else if (format == "MP3")
                 {
-                    // Select the best audio stream
                     var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
                     if (streamInfo != null)
@@ -227,27 +231,25 @@ namespace YouTubeMp3Downloader
                         var tempFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp4");
                         var finalFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp3");
 
-                        txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine)));
 
-                        // Download the video as MP4
                         await youtube.Videos.Streams.DownloadAsync(streamInfo, tempFilePath);
 
-                        txtStatus.AppendText($"Converting: {video.Title}" + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Converting: {video.Title}" + Environment.NewLine)));
 
-                        // Convert MP4 to MP3
                         await Task.Run(() => ConvertToMp3(tempFilePath, finalFilePath));
 
-                        txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine)));
                     }
                     else
                     {
-                        txtStatus.AppendText("No suitable stream found." + Environment.NewLine);
+                        txtStatus.Invoke((Action)(() => txtStatus.AppendText("No suitable stream found." + Environment.NewLine)));
                     }
                 }
             }
             catch (Exception ex)
             {
-                txtStatus.AppendText("Error: " + ex.Message + Environment.NewLine);
+                txtStatus.Invoke((Action)(() => txtStatus.AppendText("Error: " + ex.Message + Environment.NewLine)));
             }
         }
 
@@ -255,81 +257,97 @@ namespace YouTubeMp3Downloader
         {
             try
             {
+                txtStatus.Invoke((Action)(() => txtStatus.AppendText("Fetching playlist information...\n")));
                 var youtube = new YoutubeClient();
                 var playlist = await youtube.Playlists.GetAsync(playlistUrl);
                 var videos = youtube.Playlists.GetVideosAsync(playlist.Id);
 
-                // Count the videos
+                // Manually count the videos
                 int videoCount = 0;
-                await foreach (var _ in videos)
+                await foreach (var video in videos)
                 {
                     videoCount++;
                 }
 
-                progressBar.Maximum = videoCount;
+                progressBar.Invoke((Action)(() => progressBar.Maximum = videoCount));
+                txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Found {videoCount} videos. Starting download...\n")));
 
-                // Download videos
+                var tasks = new ConcurrentBag<Task>();
+                var throttler = new SemaphoreSlim(concurrentDownloads); // Use the concurrent downloads from settings
+
                 await foreach (var video in youtube.Playlists.GetVideosAsync(playlist.Id))
                 {
-                    var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Id);
-
-                    if (format == "MP4")
+                    await throttler.WaitAsync();
+                    tasks.Add(Task.Run(async () =>
                     {
-                        // Select the best video stream with audio
-                        var streamInfo = streamManifest.GetMuxedStreams().GetWithHighestVideoQuality();
-
-                        if (streamInfo != null)
+                        try
                         {
-                            var sanitizedTitle = SanitizeFileName(video.Title);
-                            var finalFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp4");
+                            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Id);
 
-                            txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine);
+                            if (format == "MP4")
+                            {
+                                var streamInfo = streamManifest.GetMuxedStreams().GetWithHighestVideoQuality();
 
-                            // Download the video as MP4
-                            await youtube.Videos.Streams.DownloadAsync(streamInfo, finalFilePath);
+                                if (streamInfo != null)
+                                {
+                                    var sanitizedTitle = SanitizeFileName(video.Title);
+                                    var finalFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp4");
 
-                            txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine);
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine)));
+
+                                    await youtube.Videos.Streams.DownloadAsync(streamInfo, finalFilePath);
+
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine)));
+                                }
+                                else
+                                {
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"No suitable stream found for: {video.Title}" + Environment.NewLine)));
+                                }
+                            }
+                            else if (format == "MP3")
+                            {
+                                var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                                if (streamInfo != null)
+                                {
+                                    var sanitizedTitle = SanitizeFileName(video.Title);
+                                    var tempFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp4");
+                                    var finalFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp3");
+
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine)));
+
+                                    await youtube.Videos.Streams.DownloadAsync(streamInfo, tempFilePath);
+
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Converting: {video.Title}" + Environment.NewLine)));
+
+                                    await Task.Run(() => ConvertToMp3(tempFilePath, finalFilePath));
+
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine)));
+                                }
+                                else
+                                {
+                                    txtStatus.Invoke((Action)(() => txtStatus.AppendText($"No suitable stream found for: {video.Title}" + Environment.NewLine)));
+                                }
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            txtStatus.AppendText($"No suitable stream found for: {video.Title}" + Environment.NewLine);
+                            txtStatus.Invoke((Action)(() => txtStatus.AppendText($"Error downloading {video.Title}: {ex.Message}" + Environment.NewLine)));
                         }
-                    }
-                    else if (format == "MP3")
-                    {
-                        // Select the best audio stream
-                        var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-
-                        if (streamInfo != null)
+                        finally
                         {
-                            var sanitizedTitle = SanitizeFileName(video.Title);
-                            var tempFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp4");
-                            var finalFilePath = Path.Combine(outputPath, $"{sanitizedTitle}.mp3");
-
-                            txtStatus.AppendText($"Downloading: {video.Title}" + Environment.NewLine);
-
-                            // Download the video as MP4
-                            await youtube.Videos.Streams.DownloadAsync(streamInfo, tempFilePath);
-
-                            txtStatus.AppendText($"Converting: {video.Title}" + Environment.NewLine);
-
-                            // Convert MP4 to MP3
-                            await Task.Run(() => ConvertToMp3(tempFilePath, finalFilePath));
-
-                            txtStatus.AppendText($"Download complete: {finalFilePath}" + Environment.NewLine);
+                            throttler.Release();
                         }
-                        else
-                        {
-                            txtStatus.AppendText($"No suitable stream found for: {video.Title}" + Environment.NewLine);
-                        }
-                    }
 
-                    progressBar.Value += 1;
+                        progressBar.Invoke((Action)(() => progressBar.Value += 1));
+                    }));
                 }
+
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
-                txtStatus.AppendText("Error: " + ex.Message + Environment.NewLine);
+                txtStatus.Invoke((Action)(() => txtStatus.AppendText("Error: " + ex.Message + Environment.NewLine)));
             }
         }
 
@@ -373,7 +391,7 @@ namespace YouTubeMp3Downloader
         {
             var settingsForm = new SettingsForm();
             settingsForm.ShowDialog();
-            LoadSettings(); // Reload settings after the settings form is closed
+            LoadSettings(); // Reload settings after the settings form is closed 
         }
 
         // Import necessary WinAPI functions for dragging the form

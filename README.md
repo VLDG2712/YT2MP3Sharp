@@ -20,7 +20,7 @@
 
         -  ! For Entertainment and Educational purposes only. !
 
-        -  ! Feel Free to Edit the code and Publish. !
+        -  ! Feel Free to Edit the code and Publish but remember to credit me. !
 
 
 Copyright (c) 2024, Constantinesei Vlad (VLDG2712)

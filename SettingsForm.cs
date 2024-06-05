@@ -18,6 +18,7 @@ namespace YouTubeMp3Downloader
         private MaterialRadioButton rbDarkTheme;
         private MaterialTextBox txtDefaultPath;
         private MaterialTextBox txtApiKey;
+        private ComboBox comboConcurrentDownloads;
         private MaterialButton btnSave;
         private MaterialButton btnBrowse;
         private Button btnClose;
@@ -50,7 +51,10 @@ namespace YouTubeMp3Downloader
             this.txtDefaultPath = new MaterialTextBox() { Hint = "Default Save Path", Width = 200, Top = 140, Left = 20 };
             this.btnBrowse = new MaterialButton() { Text = "Browse", Width = 60, Top = 140, Left = 230 };
             this.txtApiKey = new MaterialTextBox() { Hint = "API Key", Width = 280, Top = 200, Left = 20 };
-            this.btnSave = new MaterialButton() { Text = "Save Settings", Width = 280, Top = 260, Left = 20 };
+            this.comboConcurrentDownloads = new ComboBox() { Width = 280, Top = 260, Left = 20, DropDownStyle = ComboBoxStyle.DropDownList };
+            this.comboConcurrentDownloads.Items.AddRange(new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
+            this.comboConcurrentDownloads.SelectedIndex = 4; // Default to 5 concurrent downloads
+            this.btnSave = new MaterialButton() { Text = "Save Settings", Width = 280, Top = 300, Left = 20 };
 
             this.rbLightTheme.CheckedChanged += new EventHandler(this.ThemeChanged);
             this.rbDarkTheme.CheckedChanged += new EventHandler(this.ThemeChanged);
@@ -62,6 +66,7 @@ namespace YouTubeMp3Downloader
             this.Controls.Add(this.txtDefaultPath);
             this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.txtApiKey);
+            this.Controls.Add(this.comboConcurrentDownloads);
             this.Controls.Add(this.btnSave);
 
             // Custom title bar buttons with icons
@@ -97,7 +102,7 @@ namespace YouTubeMp3Downloader
             this.Controls.Add(this.btnMinimize);
 
             this.Text = "Settings";
-            this.ClientSize = new System.Drawing.Size(320, 320);
+            this.ClientSize = new System.Drawing.Size(320, 360);
             this.FormBorderStyle = FormBorderStyle.None; // Remove the default title bar
             this.MaximizeBox = false; // Disable the maximize box
             this.MinimizeBox = false; // Disable the minimize box
@@ -132,10 +137,11 @@ namespace YouTubeMp3Downloader
             var selectedTheme = rbLightTheme.Checked ? "Light" : "Dark";
             var defaultPath = txtDefaultPath.Text;
             var apiKey = txtApiKey.Text;
+            var concurrentDownloads = comboConcurrentDownloads.SelectedItem.ToString();
 
-            File.WriteAllLines(configFilePath, new[] { selectedTheme, defaultPath, apiKey });
+            File.WriteAllLines(configFilePath, new[] { selectedTheme, defaultPath, apiKey, concurrentDownloads });
             MessageBox.Show("Settings saved.");
-            UpdateMainFormTheme();
+            UpdateMainFormSettings();
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -154,11 +160,12 @@ namespace YouTubeMp3Downloader
             if (File.Exists(configFilePath))
             {
                 var settings = File.ReadAllLines(configFilePath);
-                if (settings.Length >= 3)
+                if (settings.Length >= 4)
                 {
                     var selectedTheme = settings[0];
                     var defaultPath = settings[1];
                     var apiKey = settings[2];
+                    var concurrentDownloads = settings[3];
 
                     if (selectedTheme == "Light")
                     {
@@ -173,11 +180,12 @@ namespace YouTubeMp3Downloader
 
                     txtDefaultPath.Text = defaultPath;
                     txtApiKey.Text = apiKey;
+                    comboConcurrentDownloads.SelectedItem = concurrentDownloads;
                 }
             }
         }
 
-        private void UpdateMainFormTheme()
+        private void UpdateMainFormSettings()
         {
             var mainForm = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
             if (mainForm != null)
